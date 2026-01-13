@@ -30,6 +30,7 @@
 - Porte IO: 9
 - Baud-rate porta seriale: predefinito 115200 bps
 - Formato uscita immagini: JPEG (solo supporto OV2640), BMP, SCALA DI GRIGI
+- Risoluzioni immagini: 1600x1200
 - Gamma spettro: 2412 ~ 2484MHz
 - Antenna: antenna PCB integrata, guadagno 2dBi
 - Potenza di trasmissione: 802.11b: 17±2 dBm (@11Mbps); 802.11g: 14±2 dBm (@54Mbps); 802.11n: 13±2 dBm (@MCS7)
@@ -39,7 +40,7 @@
 - Range di alimentazione: 5V
 - Temperatura operativa: -20 °C ~ 85 °C
 - Ambiente di stoccaggio: -40 °C ~ 90 °C, < 90%RH
-- Peso: 10.
+- Peso: 10g.
 
 ![Alt Text](https://ae01.alicdn.com/kf/H6ae6caf067f64ea4915338c69baa4defr/ESP32-CAM-WiFi-Bluetooth-Module-Camera-Module-Development-Board-ESP32-with-Camera-Module-OV2640-2MP-For.jpg_640x640.jpg)
 
