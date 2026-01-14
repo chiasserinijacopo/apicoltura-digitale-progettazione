@@ -1,0 +1,27 @@
+---
+config:
+  theme: redux
+  layout: fixed
+---
+flowchart TB
+    start(["Start"]) --> measure["Misura Temperatura<br>(float, °C, Timestamp)"]
+    measure --> checkNull{"Temperatura non null/errore nel sesore?"}
+    checkNull -- No --> errorHandler>"Gestione Errore:<br>Dato null, fuori range, sensore non disponibile,<br>log e notifica errore"]
+    errorHandler --> wait["Attesa 6 minuti"]
+    checkNull -- Sì --> localSave["Salva su Memoria Locale ESP32<br>(RNF-SW-01)"]
+    localSave --> checkMax{"temp > SogliaMax?"}
+    checkMax -- Sì --> alertMax["Invia Alert Soglia Massima"]
+    checkMax -- No --> checkMin{"temp &lt; SogliaMin?"}
+    checkMin -- Sì --> alertMin["Invia Alert Soglia Minima"]
+    checkMin -- No --> wait
+    alertMax --> wait
+    alertMin --> wait
+    wait --> loop["Loop: nuova misurazione"]
+    loop --> measure
+
+    measure@{ shape: rect}
+    wait@{ shape: delay}
+    localSave@{ shape: win-pane}
+    alertMax@{ shape: rect}
+    alertMin@{ shape: rect}
+    loop@{ shape: comment}
