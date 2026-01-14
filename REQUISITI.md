@@ -1,4 +1,5 @@
 
+
 # 🧭 Guida rapida: come si scrivono i requisiti (progetto “Apicoltura Digitale”)
 
 > **Obiettivo:** trasformare idee, appunti e desideri del cliente in frasi **chiare, verificabili e tracciabili** (cioè: controllabili con un test e collegabili alla loro “fonte”).  
@@ -121,7 +122,7 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 > Obiettivo: strutturare i dati in modo che siano consultabili, confrontabili e “puliti”.
 
 ### Requisiti funzionali
-- **RF-DB-01 — Anagrafiche**: Il database deve gestire le entità: `Apiario`, `Arnia`, `Sensore`, `Notifica`, `Rilevazione`, `Utente`.  
+- **RF-DB-01 — Anagrafiche**: Il database deve gestire le entità: `Apiario`, `Arnia`, `Sensore`, `Notifica`, `Rilevazione`, `Utente`.  L'entità  `Apiario` deve interfacciarsi con l'entità `Arnia` e si occupa di memorizzare la posizione (coordinate) dell'apiario e di indicarne le specifiche(id, nome, luogo, posizione). L'entità `Arnia` si interfaccia con l'entità `Sensore` e serve per identificare la singola arnia, indicare se è piena o vuota e memorizzare la data di installazione. L'entità `Sensore` si interfaccia con l'entità `Rilevazione` e rappresenta il sensore e memorizza il tipo (enum) e lo stato (attivo, non attivo) . L'entità `Rilevazione` si interfaccia con l'entità `Notifica`.
 - **RF-DB-02 — Tipo utente**: Devono esistere diversi tipi di utente: `Admin`, `Apicoltore`.
 - **RF-DB-03 — Dati del database**: Il database deve ricevere i dati:
 -- Rumore (dB)
