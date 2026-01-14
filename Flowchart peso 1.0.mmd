@@ -1,0 +1,23 @@
+flowchart TD
+    A[Avvio sensore] --> B[Power Management: deep sleep attivo]
+
+    B --> C{Sveglia ogni 3 ore?}
+    C -- No --> B
+
+    C -- Sì --> D[Disattiva deep sleep]
+
+    D --> E[Acquisizione segnale analogico]
+    E --> F[Conversione segnale in valore digitale 24 bit]
+    F --> G[Taratura: calcolo differenza peso]
+    G --> H[Trasformazione valore grezzo in kg]
+
+    H --> M{Peso entro limiti min/max?}
+
+    M -- No --> N[Scarto misura / errore peso fuori range]
+    N --> L[Power Management: ritorno deep sleep]
+
+    M -- Sì --> I[Associazione data attuale]
+    I --> J[Associazione ora attuale]
+    J --> K[Salvataggio misurazione nel DB]
+
+    K --> L[Power Management: ritorno deep sleep]
