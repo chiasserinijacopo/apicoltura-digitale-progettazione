@@ -44,25 +44,7 @@ Note Hardware: La linea SD dovrebbe avere una resistenza di pulldown da 100 k\$\
 
 ![Alt Text](https://plexylab.com/web/image/product.image/1571/image_1024/inmp441-sensor-microfono-interfaz-i2s-mems-bajo-consumo-002)
 
-# HW-038
-
-- D5 Pin (Signal): Pin di segnale (uscita analogica).
-- VCC (+5V): Polo positivo dell'alimentazione.
-- GND (Ground): Polo negativo (massa).
-
-## SPECIFICHE
-
-- Tipo di Sensore: Analogico.
-- Tensione di esercizio: DC 3V - 5V.
-- Corrente di esercizio: Minore o uguale a 20mA (\$\\le\$ 20mA).
-- Area di rilevamento: 40mm x 16mm.
-- Temperatura operativa: Da 10°C a 30°C.
-- Umidità operativa: Da 10% a 90% (senza condensa).
-- Dimensioni del prodotto: 66mm x 20mm x 8mm (nota: una tabella indica una lunghezza di 60mm, l'altra specifica 66mm includendo probabilmente i pin).
-- Peso: 3.5g.
-- Processo di produzione: FR4 a doppia faccia con livellamento della saldatura ad aria calda (HASL / stagnatura).
-
-![Alt Text](https://m.media-amazon.com/images/I/41ZlUsZMClL.jpg)
+# [FLYING FISH]()
 
 # HX711 (~40kg)
 

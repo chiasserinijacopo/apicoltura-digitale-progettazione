@@ -1,5 +1,8 @@
 # SHT21 - HTU21
 
+![Alt Text](https://www.arduiner.com/wp-content/uploads/2014/06/3788-SHT21-Umidita-and-Temp-Sensore.jpg)
+
+## PINOUT
 - VIN (Tensione di ingresso)
 - GND (Massa)
 - SCL (Segnale di clock I2C)
@@ -63,5 +66,3 @@ void loop() {
 | GND | GND | Massa |
 | SCL | IO14 | Clock |
 | SDA | IO15 | Dati |
-
-![Alt Text](https://www.arduiner.com/wp-content/uploads/2014/06/3788-SHT21-Umidita-and-Temp-Sensore.jpg)
