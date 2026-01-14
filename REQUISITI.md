@@ -1,27 +1,28 @@
 
 # 🧭 Guida rapida: come si scrivono i requisiti (progetto “Apicoltura Digitale”)
 
-> **Obiettivo:** trasformare idee, appunti e desideri del cliente in frasi **chiare, verificabili e tracciabili** (cioè: controllabili con un test e collegabili alla loro “fonte”).  
-> Nel nostro progetto, l’obiettivo generale è realizzare un sistema IoT per supportare l’apicoltore con dati remoti su produzione e stato dell’arnia, includendo device IoT, API/REST, base dati e infrastruttura di rete.  
-> (Contesto progetto: server REST, database, dispositivo IoT e infrastruttura di rete)  
+> **Obiettivo:** trasformare idee, appunti e desideri del cliente in frasi **chiare, verificabili e tracciabili** (cioè: controllabili con un test e collegabili alla loro “fonte”).
+> Nel nostro progetto, l’obiettivo generale è realizzare un sistema IoT per supportare l’apicoltore con dati remoti su produzione e stato dell’arnia, includendo device IoT, API/REST, base dati e infrastruttura di rete.
+> (Contesto progetto: server REST, database, dispositivo IoT e infrastruttura di rete)
 
 ## Cosa trovi in questo documento
+
 1. Cos’è un requisito e perché serve
 2. Regole d’oro per scriverlo bene (e perché quelli “vaghi” fanno danni)
 3. Requisiti **utente** vs requisiti **di sistema**
 4. Requisiti **funzionali** vs **non funzionali**
 5. Un *template* semplice (da copiare/incollare) per ogni requisito
 6. Esempi pronti per i 4 gruppi di lavoro:
-   - Database su **restdb.io**
-   - Device **ESP32-CAM**: sensori e hardware
-   - Software su ESP32-CAM + comunicazione **REST**
-   - Architettura di rete e infrastruttura
+- Database su **restdb.io**
+- Device **ESP32-CAM**: sensori e hardware
+- Software su ESP32-CAM + comunicazione **REST**
+- Architettura di rete e infrastruttura
 7. Mini nota: cos’è un file **Markdown (.md)** e come si scrive
 
 ---
 
 ## 1) Cos’è un requisito (e perché non è “una frase a caso”)
-Un requisito è una proprietà **richiesta** (o desiderabile) del sistema: descrive **cosa** deve essere realizzato, non *come lo implementerai* nel dettaglio.  
+Un requisito è una proprietà **richiesta** (o desiderabile) del sistema: descrive **cosa** deve essere realizzato, non *come lo implementerai* nel dettaglio.
 Serve perché:
 - diventa base per accordarsi con il cliente e non “capirsi a sentimento”;
 - guida lo sviluppo e la divisione del lavoro;
@@ -34,7 +35,7 @@ Serve perché:
 ## 2) Regole d’oro (se ne ignorate una… poi vi rincorre)
 Quando scrivete un requisito, controllate sempre questi punti:
 
-- **Specificità:** deve essere chiaro e senza interpretazioni ambigue.  
+- **Specificità:** deve essere chiaro e senza interpretazioni ambigue.
 - **Completezza:** copre tutto ciò che serve per quella funzionalità, senza buchi.
 - **Verificabilità:** deve esistere un modo pratico per dire “Sì/No, è rispettato”.
 - **Consistenza:** non deve contraddire altri requisiti.
@@ -56,9 +57,15 @@ Queste regole sono esattamente quelle che useremo come checklist durante la revi
 - Contengono vincoli, formati dati, tempi, soglie, errori.
 - Esempio: “Il sistema invia un allarme push se T < 10°C per più di 30 minuti.”
 
+  
+
 👉 In pratica: **prima** scrivo la versione “utente”, **poi** la rendo misurabile e testabile nella versione “di sistema”.
 
+  
+
 ---
+
+  
 
 ## 4) Requisiti funzionali vs non funzionali (no, non è una cosa filosofica)
 ### Funzionali (RF)
@@ -77,10 +84,10 @@ Scegliete un formato standard e mantenetelo uguale per tutto il documento.
 ### Esempio di scheda requisito (in Markdown)
 ```md
 ### RF-DB-01 — Registrazione misure sensori
-**Tipo:** Funzionale (RF)  
-**Descrizione (deve):** Il sistema deve salvare in database le misure di temperatura, umidità, peso e audio, associate a: idArnia, timestamp, qualità del segnale.  
-**Motivazione:** L’apicoltore deve consultare lo storico e confrontare periodi diversi.  
-**Priorità:** MUST / SHOULD / COULD  
+**Tipo:** Funzionale (RF)
+**Descrizione (deve):** Il sistema deve salvare in database le misure di temperatura, umidità, peso e audio, associate a: idArnia, timestamp, qualità del segnale.
+**Motivazione:** L’apicoltore deve consultare lo storico e confrontare periodi diversi.
+**Priorità:** MUST / SHOULD / COULD
 **Criteri di accettazione (test):**
 - Dato un payload valido, quando invio la misura, allora la misura compare nello storico entro 2 secondi.
 - Se manca `idArnia`, il server rifiuta con errore 400 e messaggio esplicativo.
@@ -91,7 +98,7 @@ Scegliete un formato standard e mantenetelo uguale per tutto il documento.
 ---
 
 ### Parole vietate (o quasi)
-- “facile”, “molto”, “in tempo reale” (se non specifichi **quanto**), “a breve”, “sempre”, “costantemente” (senza numeri).  
+- “facile”, “molto”, “in tempo reale” (se non specifichi **quanto**), “a breve”, “sempre”, “costantemente” (senza numeri).
 Meglio: **misura**, **frequenza**, **soglia**, **tempo massimo**, **formato**.
 
 ---
@@ -105,8 +112,8 @@ Diventa un requisito testabile così:
 
 ```md
 ### RF-HW-01 — Misura temperatura interna
-**Tipo:** Funzionale (RF)  
-**Descrizione (deve):** Il device deve acquisire la temperatura interna dell’arnia ogni 60 secondi e associare a ogni misura un timestamp.  
+**Tipo:** Funzionale (RF)
+**Descrizione (deve):** Il device deve acquisire la temperatura interna dell’arnia ogni 60 secondi e associare a ogni misura un timestamp.
 **Criteri di accettazione:**
 - La misura viene registrata localmente anche senza rete.
 - La misura viene inviata al server entro 5 minuti dal ripristino della connessione.
@@ -151,17 +158,92 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 > Obiettivo: definire quali sensori servono, dove metterli, e quali vincoli fisici ci sono (meteo, temperatura, acqua, urti…).
 
 ### Requisiti funzionali (esempi)
-- **RF-HW-01 — Peso**: Il device deve misurare il peso dell’arnia per stimare andamento nettare/colonia.  
-  - Nota dominio: il peso cresce con nettare e colonia, e diminuisce quando la colonia consuma miele o muore.  
+**[RF-HW-01 — Peso](DOCUMENTAZIONE%20HARDWARE.md#hx711-rf-hw-01)**: Il device deve misurare il peso dell’arnia per stimare andamento nettare/colonia.  
+ - Nota dominio: il peso cresce con nettare e colonia, e diminuisce quando la colonia consuma miele o muore. 
+ 
+**RF-HW-01 — Monitoraggio Peso e Mielometro** Il device deve misurare il peso totale dell'arnia con una risoluzione minima di 100g e calcolare il guadagno netto giornaliero (funzione mielometro).
 
-### Requisiti non funzionali (esempi)
-- **RNF-HW-01 — Resistenza meteo**: Il device deve resistere a pioggia, umidità e sbalzi termici.  
+### Requisiti funzionali (esempi)
 
-📎 Media consigliati:
-- Foto del modulo ESP32-CAM (per descrivere connettori e ingombri).
-- Foto/diagramma di un modulo peso con HX711 + cella di carico.
-- Immagine di un sensore umidità/temperatura (es. DHT22) come riferimento visivo.
-- Diagramma componenti arnia (per “posizionamento sensori”).
+**RF-HW-01 — Peso**: Il device deve misurare il peso dell’arnia per stimare andamento nettare/colonia.
+
+- Nota dominio: il peso cresce con nettare e colonia, e diminuisce quando la colonia consuma miele o muore.
+
+**[RF-HW-02 — Clima Interno (SHT21/BME280)](DOCUMENTAZIONE%20HARDWARE.md#sht21-rf-hw-02)** Il device deve misurare Temperatura e Umidità Relativa (RH) posizionato nella zona superiore (melario/coprifavo) e/o centrale (nido).
+
+  
+
+- _Nota dominio:_ L'umidità dell'aria interna è inversamente proporzionale alla maturazione del miele. Una RH interna > 65% costante indica rischio fermentazione o blocco dell'evaporazione. La temperatura del nido deve rimanere stabile a ~35°C per la covata.
+
+**[RF-HW-03 — Analisi Acustica (Spettro)](DOCUMENTAZIONE%20HARDWARE.md#inmp441-rf-hw-03)** Il device deve campionare il rumore interno ed effettuare un'analisi in frequenza (FFT) per identificare picchi specifici tra 200Hz e 600Hz.
+
+  
+
+- _Nota dominio:_ Le api emettono frequenze specifiche per stati diversi: "Piping" (regine vergini pre-sciamatura, 400-500Hz), orfanità (bassa frequenza, "lamento"), e ventilazione notturna (asciugatura miele).
+
+  
+
+**RF-HW-04 — Livello Risorse Idriche** Il device deve misurare la distanza del pelo libero dell'acqua in un serbatoio esterno (secchio) e convertire il dato in percentuale residua in base ad una taratura fatta precedentemente in sui si da un valore max e min (es. max=20L, min=2L).
+
+  
+
+- _Nota dominio:_ Le api necessitano di molta acqua per termoregolare l'arnia d'estate. Se l'acqua finisce, la colonia rischia il collasso termico.
+
+  
+
+**RF-HW-05 — Monitoraggio Visivo (Foto Ingresso)** Il device deve scattare fotografie del predellino di volo (l'entrata dell'arnia) a intervalli regolari o quando richieste dal cliente, inviando l'immagine o un dato riassuntivo.
+
+-   _Nota dominio_: Osservare l'ingresso permette di capire la salute della famiglia senza aprire l'arnia:
+    
+
+1.  "Barba" delle api: Se le api si ammucchiano fuori, fa troppo caldo o l'arnia è piena.
+    
+2.  Polline: I colori del polline sulle zampe indicano cosa stanno raccogliendo.
+    
+3.  Predatori: Si possono notare calabroni o vespe che attaccano la colonia.
+    
+
+
+**[RF-HW-05 — Livello Risorse Idriche](DOCUMENTAZIONE%20HARDWARE.md#hw-038-rf-hw-05)** Il device deve misurare la distanza del pelo libero dell'acqua in un serbatoio esterno (secchio) e convertire il dato in percentuale residua.
+
+  
+
+----------
+
+  
+
+### Requisiti Non Funzionali (Vincoli e Qualità)
+
+  
+
+**RNF-HW-01 — Resistenza Ambientale Esterna (IP Rating)** I sensori esterni (Livello Acqua, Bilancia, Elettronica centrale) devono avere un grado di protezione minimo IP65 o IP67.
+
+  
+
+- _Nota dominio:_ L'attrezzatura è esposta a pioggia battente, raggi UV diretti, gelo invernale e fango.
+
+  
+
+**RNF-HW-02 — Resistenza Ambientale Interna (Anti-Propoli)** I sensori interni (SHT21, Microfono) devono essere dotati di protezioni fisiche (reti a maglia fine < 2mm) o filtri in PTFE.
+
+  
+
+- _Nota dominio:_ Le api "propolizzano" (coprono di resina) qualsiasi corpo estraneo per sterilizzarlo. Un sensore non protetto viene murato e reso inutilizzabile in < 48 ore.
+
+  
+
+**RNF-HW-03 — Resistenza Chimica (Acidi)** I materiali e i contatti esposti all'interno dell'arnia devono resistere alla corrosione da vapori acidi.
+
+  
+
+- _Nota dominio:_ Gli apicoltori usano regolarmente Acido Ossalico (sublimato o gocciolato) e Acido Formico per combattere la Varroa. Questi acidi ossidano rapidamente i contatti elettronici standard.
+
+**RNF-HW-04 — Non Intrusività** L'installazione dei sensori non deve alterare i passaggi vitali (spazio d'ape ~8-9mm) né emettere vibrazioni o ultrasuoni nel range udibile dalle api.
+
+  
+
+- _Nota dominio:_ Le api comunicano tramite vibrazioni. Interferenze meccaniche o restringimenti dell'ingresso possono causare stress, aggressività o abbandono dell'arnia.
+  
 
 ---
 
@@ -231,7 +313,6 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 ## Gruppo D — Architettura di rete e infrastruttura (server, sicurezza, connettività)
 > Obiettivo: definire come “parlano” tra loro device, server e interfaccia web (e con quali garanzie).
 
-
 ### Requisiti funzionali
 
 -   **RF-NET-01 — Router dedicato all’apiario**:  
@@ -272,14 +353,17 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 ---
 
 # 8) Mini nota: cos’è un file Markdown (.md) e perché lo usiamo
-**Markdown** è un modo semplice per scrivere documenti usando solo testo, ma con una sintassi leggera per titoli, elenchi, grassetti e blocchi di codice.  
+
+**Markdown** è un modo semplice per scrivere documenti usando solo testo, ma con una sintassi leggera per titoli, elenchi, grassetti e blocchi di codice.
+
 È perfetto per GitHub e per consegne “pulite” in cui versionare modifiche e lavorare in gruppo.
 
 ### Mini cheat sheet Markdown
+
 ```md
 # Titolo
 ## Sezione
-**grassetto**  *corsivo*
+**grassetto** *corsivo*
 
 - elenco puntato
 1. elenco numerato
@@ -290,7 +374,8 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 ```md
 | Colonna | Valore |
 |--------:|:------ |
-| id      | RF-01  |
+| id | RF-01 |
+
 ```
 
 ---
@@ -306,4 +391,3 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 8. **Tracciabilità** (tabellina requisito → fonte → test → componente)
 
 Buon lavoro: i requisiti non sono “burocrazia”, sono l’unico modo per non litigare con il futuro voi stessi. 😄
-
