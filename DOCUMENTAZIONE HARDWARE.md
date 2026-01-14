@@ -6,43 +6,7 @@
 
 # [DS18B20](TEST%20SENSORI/Sensore_DS18B20/)
 
-# INMP441
-
-## SPECIFICHE
-
-- SCK: Clock dei dati seriali per l'interfaccia I2S.
-- SD: Uscita dati seriali per l'interfaccia I2S; il pin va in alta impedenza (tri-state) quando non trasmette attivamente sul canale appropriato.
-- WS: Selezione della parola dati seriali (Word Select) per l'interfaccia I2S.
-- L/R: Selezione del canale Sinistro/Destro; se impostato su basso l'uscita è nel canale sinistro, se alto nel canale destro.
-- GND: Massa (Ground) da collegare al PCB (Pin 5, 6 e 9).
-- VDD: Alimentazione da 1,8 V a 3,3 V; deve essere disaccoppiato con un condensatore da 0,1 μF collegato specificamente al Pin 6.
-- CHIPEN: Abilitazione del microfono; impostare su alto (VDD​) per abilitarlo o su basso (GND) per la modalità power-down.
-- Direzionalità: Omnidirezionale.
-- Sensibilità: -26 dBFS (tipica a 1 kHz, 94 dB SPL); intervallo garantito tra -29 e -23 dBFS.
-- Rapporto Segnale-Rumore (SNR): 61 dBA (pesato A).
-- Rumore Equivalente in Ingresso (EIN): 33 dBA SPL (pesato A).
-- Gamma Dinamica: 87 dB (derivata da EIN e massimo ingresso acustico).
-- Risposta in Frequenza: Da 60 Hz a 15 kHz (punti di roll-off a -3 dB).
-- Distorsione Armonica Totale (THD): 3% a 105 dB SPL.
-- Reiezione dell'Alimentazione (PSR): -75 dBFS (con onda quadra da 100 mVp-p a 217 Hz su VDD​ = 1,8 V).
-- Massimo Ingresso Acustico: 120 dB SPL (picco).
-- Rumore di Fondo (Noise Floor): -87 dBFS (pesato A, RMS).
-- Tensione di Alimentazione (VDD​): Intervallo operativo reale tra 1,62 V e 3,63 V.
-- Consumo di Corrente (Normal Mode): 1,4 mA a 1,8 V oppure 2,2 mA a 3,3 V.
-- Consumo in Standby: 0,8 mA.
-- Consumo in Power Down: Da 2 μA (a 1,8 V) a 4,5 μA (a 3,3 V).
-- Caratteristiche Filtro Digitale: Ritardo di gruppo di 17,2/fS​ secondi; ripple in banda passante di ±0,04 dB; attenuazione in banda d'arresto di 60 dB.
-- Livelli Logici Digitali: VIH​ (Alto) minimo 0,7×VDD​; VIL​ (Basso) massimo 0,25×VDD​.
-- Specifiche di Temporizzazione (Timing):
-- Frequenza SCK: Da 0,5 MHz a 3,2 MHz.
-- Frequenza WS: Da 7,8 kHz a 50 kHz.
-- Tempi minimi SCK High/Low (tSCH​,tSCL​): 50 ns.
-- Periodo SCK (tSCP​): Minimo 312 ns.
-- Setup WS (tWSS​): Minimo 0 ns; Hold WS (tWSH​): Minimo 20 ns.
-
-Note Hardware: La linea SD dovrebbe avere una resistenza di pulldown da 100 k\$\\Omega\$ per scaricare la linea durante il tri-state.
-
-![Alt Text](https://plexylab.com/web/image/product.image/1571/image_1024/inmp441-sensor-microfono-interfaz-i2s-mems-bajo-consumo-002)
+# [INMP441](TEST%20SENSORI/Sensore_KY-038)
 
 # [FLYING FISH](TEST%20SENSORI/Sensore_FlyingFish/)
 
