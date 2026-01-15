@@ -187,7 +187,7 @@ Perché è meglio? Perché ora sappiamo **quanto spesso**, **dove finisce il dat
 - **RF-SW-16 — MIC, Frequenza suono**: Si calcola la frequenza per avere una misura più precisa dello stato dello sciame.
 - **RF-SW-17 — MIC, Verifica soglia**:  Il microfono confronta i valori rilevati con valori di allarme del DB.
 - **RF-SW-18 — MIC, Notifica alert**: Se si supera una certa soglia l'apicoltore riceve una notifica.
-- **RF-SW-18.5 -MIN, Time Stamp ogni minuto**, Si accumulano 6 misurazioni per poi inviarle insieme insieme al TimeStamp.
+- **RF-SW-18.5 -MIC, Time Stamp ogni minuto**, Si accumulano 6 misurazioni per poi inviarle insieme insieme al TimeStamp.
 - **RF-SW-19 — UM, Misurazione umidità come % nell'aria**: Il sensore misura la percentuale di umidità all'interno dell'arnia.
 - **RF-SW-20 — UM, Tipo di dato**: Il valore del sensore è ospitato in una variabile float. 
 - **RF-SW-21 — UM, Timestamp**: Ad ogni misurazione è associata la data e l'ora di esecuzione del DB.
