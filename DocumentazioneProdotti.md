@@ -39,7 +39,7 @@ Maggiore affidabilità e durata del sistema
 Vantaggio per l’apicoltore:
 Nessuna interruzione nel monitoraggio dell’arnia.
 
-4. Custodie in plastica (75,72 € x 3)
+4. Custodie in plastica (43,80 € x 3)
 Funzione:
 Proteggono i componenti elettronici (router, batterie, centraline).
 
