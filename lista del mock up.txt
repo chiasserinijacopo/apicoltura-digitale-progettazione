@@ -1,0 +1,45 @@
+### 1. Schermata di Accesso (Login)
+
+-   **Elementi visivi:** Logo del progetto, campi di inserimento per nome utente e password.
+    
+-   **Funzionalità:** Pulsante di accesso e opzione per il recupero delle credenziali.
+    
+
+### 2. Dashboard di Monitoraggio (Home)
+
+-   **Elementi visivi:** Panoramica sintetica suddivisa in tre sezioni distinte (Arnia 1, Arnia 2, Arnia 3).
+    
+-   **Dati visualizzati:** Stato di salute generale (icona a semaforo), valore del peso attuale e temperatura interna per ciascuna unità.
+    
+-   **Navigazione:** Selezione di una singola sezione per accedere ai dati dettagliati.
+    
+
+### 3. Dettaglio Arnia (Analisi Dati)
+
+-   **Elementi visivi:** Grafici temporali (andamento giornaliero/settimanale) per peso, temperatura e umidità.
+    
+-   **Indicatori tecnici:** Livello di carica della batteria del sensore e intensità del segnale di trasmissione.
+    
+-   **Log Eventi:** Registro cronologico delle ultime attività rilevate.
+    
+
+### 4. Gestione Soglie e Notifiche (Settaggi)
+
+-   **Elementi visivi:** Pannello di controllo con selettori numerici e interruttori (on/off).
+    
+-   **Parametri configurabili:**
+    
+    -   Soglia minima e massima di temperatura.
+        
+    -   Variazione di peso massima consentita (allerta sciamatura o furto).
+        
+    -   Soglia critica della batteria.
+        
+-   **Funzionalità:** Attivazione degli avvisi push in caso di superamento dei limiti impostati.
+    
+
+### 5. Impostazioni Utente
+
+-   **Elementi visivi:** Pannello di configurazione del profilo e preferenze di sistema.
+    
+-   **Contenuto:** Unità di misura, gestione account, informazioni sulla versione del software e crediti del progetto.
