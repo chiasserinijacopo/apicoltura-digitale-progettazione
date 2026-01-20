@@ -7,7 +7,9 @@
 // ============================================================================
 
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
+#include <time.h>
 #include "SensorValidation.h"
 
 // ============================================================================
@@ -21,6 +23,29 @@ static int _server_timeout = 10000;
 static const char* ENDPOINT_CONFIG = "/configurazioni";
 static const char* ENDPOINT_RILEVAZIONI = "/rilevazioni";
 static const char* ENDPOINT_NOTIFICHE = "/notifiche";
+
+// ============================================================================
+// HELPER - Converte timestamp Unix in formato ISO 8601
+// ============================================================================
+static void timestampToISO(unsigned long timestamp, char* buffer, size_t bufferSize) {
+  // Se timestamp è in millisecondi (molto grande), converti in secondi
+  if (timestamp > 1000000000000UL) {
+    timestamp = timestamp / 1000;
+  }
+
+  // Se timestamp sembra essere millis() (relativamente piccolo), usa tempo corrente
+  if (timestamp < 1000000000UL) {
+    time_t now = time(nullptr);
+    if (now > 1000000000) {
+      timestamp = (unsigned long)now;
+    }
+  }
+
+  time_t rawtime = (time_t)timestamp;
+  struct tm* timeinfo = gmtime(&rawtime);
+
+  strftime(buffer, bufferSize, "%Y-%m-%dT%H:%M:%S.000Z", timeinfo);
+}
 
 // ============================================================================
 // STATO
@@ -105,11 +130,12 @@ ConfigData fetch_sensor_config(const char* macAddress) {
   ConfigData response;
   response.success = false;
 
-  // Valori default
-  response.ds18b20 = {30.0f, 37.0f, 360000, true};
-  response.sht21_humidity = {40.0f, 70.0f, 360000, true};
-  response.sht21_temperature = {10.0f, 45.0f, 360000, true};
-  response.hx711 = {10.0f, 80.0f, 10800000, true};
+  // Valori default (sogliaMin, sogliaMax, intervallo, abilitato, sensorId)
+  // Gli _id di default sono placeholder - sostituire con quelli reali dal DB
+  response.ds18b20 = {30.0f, 37.0f, 360000, true, "DEFAULT_DS18B20"};
+  response.sht21_humidity = {40.0f, 70.0f, 360000, true, "DEFAULT_SHT21_HUM"};
+  response.sht21_temperature = {10.0f, 45.0f, 360000, true, "DEFAULT_SHT21_TEMP"};
+  response.hx711 = {10.0f, 80.0f, 60000, true, "DEFAULT_HX711"};
   response.calibrationFactor = 2280.0f;
   response.calibrationOffset = 50000;
 
@@ -117,6 +143,10 @@ ConfigData fetch_sensor_config(const char* macAddress) {
     Serial.println("  ! fetch_sensor_config: manager non inizializzato");
     return response;
   }
+
+  // Client HTTPS sicuro
+  WiFiClientSecure client;
+  client.setInsecure();  // Disabilita verifica certificato (per testing)
 
   HTTPClient http;
 
@@ -128,7 +158,7 @@ ConfigData fetch_sensor_config(const char* macAddress) {
   Serial.print("  [GET] ");
   Serial.println(url);
 
-  http.begin(url);
+  http.begin(client, url);
   http.setTimeout(_server_timeout);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("x-apikey", _server_api_key);
@@ -147,34 +177,42 @@ ConfigData fetch_sensor_config(const char* macAddress) {
 
       // DS18B20
       if (config.containsKey("ds18b20")) {
-        response.ds18b20.sogliaMin = config["ds18b20"]["sogliaMin"] | 30.0f;
-        response.ds18b20.sogliaMax = config["ds18b20"]["sogliaMax"] | 37.0f;
+        response.ds18b20.sogliaMin = config["ds18b20"]["sea_min"] | 30.0f;
+        response.ds18b20.sogliaMax = config["ds18b20"]["sea_max"] | 37.0f;
         response.ds18b20.intervallo = config["ds18b20"]["intervallo"] | 360000UL;
-        response.ds18b20.abilitato = config["ds18b20"]["abilitato"] | true;
+        response.ds18b20.abilitato = config["ds18b20"]["sea_stato"] | true;
+        const char* id = config["ds18b20"]["_id"] | "";
+        strncpy(response.ds18b20.sensorId, id, sizeof(response.ds18b20.sensorId) - 1);
       }
 
       // SHT21 Humidity
       if (config.containsKey("sht21_humidity")) {
-        response.sht21_humidity.sogliaMin = config["sht21_humidity"]["sogliaMin"] | 40.0f;
-        response.sht21_humidity.sogliaMax = config["sht21_humidity"]["sogliaMax"] | 70.0f;
+        response.sht21_humidity.sogliaMin = config["sht21_humidity"]["sea_min"] | 40.0f;
+        response.sht21_humidity.sogliaMax = config["sht21_humidity"]["sea_max"] | 70.0f;
         response.sht21_humidity.intervallo = config["sht21_humidity"]["intervallo"] | 360000UL;
-        response.sht21_humidity.abilitato = config["sht21_humidity"]["abilitato"] | true;
+        response.sht21_humidity.abilitato = config["sht21_humidity"]["sea_stato"] | true;
+        const char* id = config["sht21_humidity"]["_id"] | "";
+        strncpy(response.sht21_humidity.sensorId, id, sizeof(response.sht21_humidity.sensorId) - 1);
       }
 
       // SHT21 Temperature
       if (config.containsKey("sht21_temperature")) {
-        response.sht21_temperature.sogliaMin = config["sht21_temperature"]["sogliaMin"] | 10.0f;
-        response.sht21_temperature.sogliaMax = config["sht21_temperature"]["sogliaMax"] | 45.0f;
+        response.sht21_temperature.sogliaMin = config["sht21_temperature"]["sea_min"] | 10.0f;
+        response.sht21_temperature.sogliaMax = config["sht21_temperature"]["sea_max"] | 45.0f;
         response.sht21_temperature.intervallo = config["sht21_temperature"]["intervallo"] | 360000UL;
-        response.sht21_temperature.abilitato = config["sht21_temperature"]["abilitato"] | true;
+        response.sht21_temperature.abilitato = config["sht21_temperature"]["sea_stato"] | true;
+        const char* id = config["sht21_temperature"]["_id"] | "";
+        strncpy(response.sht21_temperature.sensorId, id, sizeof(response.sht21_temperature.sensorId) - 1);
       }
 
       // HX711
       if (config.containsKey("hx711")) {
-        response.hx711.sogliaMin = config["hx711"]["sogliaMin"] | 10.0f;
-        response.hx711.sogliaMax = config["hx711"]["sogliaMax"] | 80.0f;
+        response.hx711.sogliaMin = config["hx711"]["sea_min"] | 10.0f;
+        response.hx711.sogliaMax = config["hx711"]["sea_max"] | 80.0f;
         response.hx711.intervallo = config["hx711"]["intervallo"] | 10800000UL;
-        response.hx711.abilitato = config["hx711"]["abilitato"] | true;
+        response.hx711.abilitato = config["hx711"]["sea_stato"] | true;
+        const char* id = config["hx711"]["_id"] | "";
+        strncpy(response.hx711.sensorId, id, sizeof(response.hx711.sensorId) - 1);
       }
 
       // Calibrazione peso
@@ -209,32 +247,48 @@ bool save_sensor_data(SensorData* data) {
     return false;
   }
 
+  // Verifica che abbiamo un sensorId valido
+  if (strlen(data->idSensore) == 0) {
+    Serial.println("  ! save_sensor_data: sensorId mancante");
+    return false;
+  }
+
+  // Client HTTPS sicuro
+  WiFiClientSecure client;
+  client.setInsecure();
+
   HTTPClient http;
 
   char url[256];
   snprintf(url, sizeof(url), "%s%s", _server_base_url, ENDPOINT_RILEVAZIONI);
 
-  // Costruisci JSON
-  StaticJsonDocument<512> doc;
-  doc["macAddress"] = data->macAddress;
-  doc["tipoSensore"] = data->tipoSensore;
-  doc["idSensore"] = data->idSensore;
-  doc["valore"] = data->valore;
-  doc["unita"] = data->unita;
-  doc["timestamp"] = data->timestamp;
-  doc["codiceStato"] = data->codiceStato;
-  doc["alert"] = data->alert;
-  if (data->alert) {
-    doc["alertTipo"] = data->alertTipo;
-  }
+  // Converti timestamp in formato ISO 8601
+  char isoTimestamp[32];
+  timestampToISO(data->timestamp, isoTimestamp, sizeof(isoTimestamp));
+
+  // Costruisci JSON nel formato richiesto dal DB:
+  // {
+  //   "ril_dato": <valore>,
+  //   "ril_dataOra": "<ISO timestamp>",
+  //   "ril_sea_id": ["<sensor_id>"]
+  // }
+  StaticJsonDocument<256> doc;
+  doc["ril_dato"] = data->valore;
+  doc["ril_dataOra"] = isoTimestamp;
+
+  // ril_sea_id è un array con l'ID del sensore
+  JsonArray seaIdArray = doc.createNestedArray("ril_sea_id");
+  seaIdArray.add(data->idSensore);
 
   String jsonPayload;
   serializeJson(doc, jsonPayload);
 
   Serial.print("  [POST] ");
   Serial.println(url);
+  Serial.print("  JSON: ");
+  Serial.println(jsonPayload);
 
-  http.begin(url);
+  http.begin(client, url);
   http.setTimeout(_server_timeout);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("x-apikey", _server_api_key);
@@ -255,23 +309,19 @@ bool save_sensor_data(SensorData* data) {
 }
 
 // ============================================================================
-// HELPER - Salvataggio rapido senza creare struct
+// HELPER - Salvataggio rapido rilevazione
 // ============================================================================
-bool save_value(const char* macAddress, const char* tipoSensore,
-                const char* idSensore, float valore, const char* unita,
-                unsigned long timestamp, int codiceStato,
-                bool alert, const char* alertTipo) {
-
+// sensorId: l'_id MongoDB del sensore (da SensorConfig.sensorId)
+// valore: il valore rilevato
+// timestamp: timestamp Unix della rilevazione
+// ============================================================================
+bool save_value(const char* sensorId, float valore, unsigned long timestamp) {
   SensorData data;
-  strncpy(data.macAddress, macAddress, sizeof(data.macAddress) - 1);
-  strncpy(data.tipoSensore, tipoSensore, sizeof(data.tipoSensore) - 1);
-  strncpy(data.idSensore, idSensore, sizeof(data.idSensore) - 1);
+  memset(&data, 0, sizeof(data));
+
+  strncpy(data.idSensore, sensorId, sizeof(data.idSensore) - 1);
   data.valore = valore;
-  strncpy(data.unita, unita, sizeof(data.unita) - 1);
   data.timestamp = timestamp;
-  data.codiceStato = codiceStato;
-  data.alert = alert;
-  strncpy(data.alertTipo, alertTipo, sizeof(data.alertTipo) - 1);
 
   return save_sensor_data(&data);
 }
@@ -291,6 +341,10 @@ bool send_notification(NotificationData* notification) {
     Serial.println("  ! send_notification: manager non inizializzato");
     return false;
   }
+
+  // Client HTTPS sicuro
+  WiFiClientSecure client;
+  client.setInsecure();
 
   HTTPClient http;
 
@@ -324,7 +378,7 @@ bool send_notification(NotificationData* notification) {
   Serial.print("  [POST NOTIFICA] ");
   Serial.println(url);
 
-  http.begin(url);
+  http.begin(client, url);
   http.setTimeout(_server_timeout);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("x-apikey", _server_api_key);
