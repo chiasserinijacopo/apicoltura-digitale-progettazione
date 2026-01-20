@@ -1,0 +1,268 @@
+import React, { useState } from 'react';
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
+import { Home, Settings, Bell, Battery, AlertTriangle } from 'lucide-react';
+
+ --- 1. CONFIGURAZIONE STILI E TEMA ---
+const THEME = {
+  colors {
+    bg '#121212',            Sfondo App
+    cardBg '#1E1E1E',        Sfondo Card
+    primary '#F59E0B',       Colore OroMiele (Accento)
+    text '#FFFFFF',          Testo principale
+    textDim '#A0A0A0',       Testo secondario
+    border '#333333',        Bordi sottili
+    chartBlue '#3B82F6',
+    chartGreen '#10B981',
+    chartGold '#F59E0B',
+  }
+};
+
+const styles = {
+  container {
+    minHeight '100vh',
+    backgroundColor THEME.colors.bg,
+    color THEME.colors.text,
+    fontFamily 'sans-serif',
+    maxWidth '480px',  Limite larghezza per simulare mobile su desktop
+    margin '0 auto',
+    display 'flex',
+    flexDirection 'column',
+    position 'relative',
+    borderLeft `1px solid ${THEME.colors.border}`,
+    borderRight `1px solid ${THEME.colors.border}`,
+  },
+  section { padding '0 16px 16px 16px' },
+  row { display 'flex', gap '12px', marginBottom '12px' },
+};
+
+ --- 2. DATI MOCK (SIMULATI) ---
+const mockChartData = [
+  { val 10 }, { val 12 }, { val 18 }, { val 15 }, { val 22 }, { val 28 }, { val 35 }
+];
+
+const mockNotifications = [
+  { id 1, day 'OGGI', title 'Allarme Temp.', desc 'Temp. massima superata', urgent true },
+  { id 2, day 'OGGI', title 'Calo Peso', desc 'Calo improvviso rilevato', urgent false },
+  { id 3, day 'IERI', title 'Batteria', desc 'Livello batteria ripristinato', urgent false },
+];
+
+ --- 3. COMPONENTI UI RIUTILIZZABILI ---
+
+ Componente Header Principale
+const Header = () = (
+  header style={{ padding '24px 16px', textAlign 'center', borderBottom `1px solid ${THEME.colors.primary}` }}
+    h1 style={{ fontSize '20px', fontWeight 'bold', margin 0, letterSpacing '1px' }}
+      ARNIA span style={{ color THEME.colors.primary }}Città di Castellospan
+    h1
+    p style={{ margin '4px 0 0 0', fontSize '12px', color THEME.colors.textDim, textTransform 'uppercase' }}
+      Dashboard Monitoraggio
+    p
+  header
+);
+
+ Componente Selettore Tab (OggiSettimanaMese)
+const TimeSelector = ({ active, setActive }) = {
+  const tabs = ['OGGI', 'SETTIMANA', 'MESE'];
+  
+  return (
+    div style={{ padding '16px', display 'flex', gap '8px' }}
+      {tabs.map((tab) = {
+        const isActive = active === tab;
+        return (
+          button
+            key={tab}
+            onClick={() = setActive(tab)}
+            style={{
+              flex 1,
+              padding '10px',
+              borderRadius '8px',
+              border `1px solid ${isActive  THEME.colors.primary  THEME.colors.border}`,
+              backgroundColor isActive  THEME.colors.primary  'transparent',
+              color isActive  '#000'  THEME.colors.textDim,
+              fontWeight 'bold',
+              fontSize '12px',
+              cursor 'pointer',
+              transition 'all 0.2s',
+            }}
+          
+            {tab}
+          button
+        );
+      })}
+    div
+  );
+};
+
+ Componente Card Grafico (Il cuore della dashboard)
+const StatCard = ({ title, unit, color, min, max, fullWidth = false }) = (
+  div style={{
+    flex fullWidth  '1 1 100%'  '1 1 50%',
+    backgroundColor THEME.colors.cardBg,
+    borderRadius '16px',
+    padding '16px',
+    border `1px solid ${THEME.colors.border}`,
+    boxShadow '0 4px 12px rgba(0,0,0,0.2)',
+    display 'flex',
+    flexDirection 'column',
+    justifyContent 'space-between'
+  }}
+    { Titolo Card }
+    div style={{ display 'flex', justifyContent 'space-between', marginBottom '8px', fontSize '14px', fontWeight '600' }}
+      {title}
+      span style={{ color color }}{unit}span
+    div
+
+    { Grafico }
+    div style={{ height '80px', width '100%', marginBottom '8px' }}
+      ResponsiveContainer width=100% height=100%
+        LineChart data={mockChartData}
+          Line 
+            type=monotone 
+            dataKey=val 
+            stroke={color} 
+            strokeWidth={2} 
+            dot={false} 
+            activeDot={{ r 4 }}
+          
+          { Linea ombra per effetto profondità }
+          Line 
+            type=monotone 
+            dataKey=val 
+            stroke={color} 
+            strokeWidth={8} 
+            strokeOpacity={0.1} 
+            dot={false} 
+          
+        LineChart
+      ResponsiveContainer
+    div
+
+    { Footer Dati }
+    div style={{ 
+      borderTop `1px solid ${THEME.colors.border}`, 
+      paddingTop '8px', 
+      fontSize '10px', 
+      color THEME.colors.textDim,
+      textAlign 'center',
+      display 'flex',
+      justifyContent 'space-between'
+    }}
+      spanMIN {min}span
+      spanMAX {max}span
+    div
+  div
+);
+
+ Componente Lista Notifiche
+const NotificationList = ({ notifications }) = (
+  div style={{ ...styles.section, marginTop '8px' }}
+    h3 style={{ fontSize '14px', color THEME.colors.textDim, marginBottom '10px', textTransform 'uppercase' }}
+      Ultime Notifiche
+    h3
+    div style={{ backgroundColor THEME.colors.cardBg, borderRadius '16px', overflow 'hidden', border `1px solid ${THEME.colors.border}` }}
+      {notifications.map((notif, index) = (
+        div key={notif.id} style={{
+          padding '12px',
+          borderBottom index !== notifications.length - 1  `1px solid ${THEME.colors.border}`  'none',
+          display 'flex',
+          alignItems 'center',
+          gap '12px'
+        }}
+          { Badge Giorno }
+          div style={{ 
+            fontSize '10px', fontWeight 'bold', 
+            backgroundColor '#333', padding '4px 8px', borderRadius '4px',
+            color THEME.colors.textDim, minWidth '40px', textAlign 'center'
+          }}
+            {notif.day}
+          div
+          
+          { Testo }
+          div style={{ flex 1 }}
+            div style={{ fontSize '13px', fontWeight 'bold', color notif.urgent  '#EF4444'  THEME.colors.text }}
+              {notif.title}
+            div
+            div style={{ fontSize '11px', color THEME.colors.textDim }}{notif.desc}div
+          div
+
+          { Icona indicativa }
+          {notif.urgent  AlertTriangle size={16} color=#EF4444   Battery size={16} color={THEME.colors.primary} }
+        div
+      ))}
+    div
+  div
+);
+
+ Componente Bottom Navigation (Footer)
+const BottomNav = () = (
+  div style={{ padding '20px', marginTop 'auto', display 'flex', gap '16px' }}
+    ActionButton icon={Home size={18} } text=HOME 
+    ActionButton icon={Settings size={18} } text=IMPOSTAZIONI 
+  div
+);
+
+ Sotto-componente bottone footer
+const ActionButton = ({ icon, text }) = (
+  button style={{
+    flex 1,
+    display 'flex',
+    alignItems 'center',
+    justifyContent 'center',
+    gap '8px',
+    backgroundColor 'transparent',
+    border `1px solid ${THEME.colors.primary}`,
+    color THEME.colors.primary,
+    padding '14px',
+    borderRadius '12px',
+    fontSize '13px',
+    fontWeight 'bold',
+    cursor 'pointer'
+  }}
+    {icon} {text}
+  button
+);
+
+ --- 4. APPLICAZIONE PRINCIPALE ---
+const DashboardArnia = () = {
+  const [activeTab, setActiveTab] = useState('SETTIMANA');
+
+  return (
+    div style={styles.container}
+      Header 
+      
+      TimeSelector active={activeTab} setActive={setActiveTab} 
+
+      div style={styles.section}
+        { Riga 1 Peso e Temperatura }
+        div style={styles.row}
+          StatCard 
+            title=Peso unit=Kg 
+            color={THEME.colors.chartBlue} 
+            min=40.2 max=43.5 
+          
+          StatCard 
+            title=Temperatura unit=°C 
+            color={THEME.colors.chartGold} 
+            min=30° max=36° 
+          
+        div
+
+        { Riga 2 Umidità (Larga) }
+        div style={styles.row}
+          StatCard 
+            title=Umidità unit=% 
+            color={THEME.colors.chartGreen} 
+            min=45% max=65% 
+            fullWidth 
+          
+        div
+      div
+
+      NotificationList notifications={mockNotifications} 
+
+      BottomNav 
+    div
+  );
+};
+
+export default DashboardArnia;
