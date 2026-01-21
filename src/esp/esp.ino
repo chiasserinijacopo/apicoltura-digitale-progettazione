@@ -6,6 +6,9 @@
 #include <WiFiMulti.h>
 #include <esp_task_wdt.h>
 #include "SensorValidation.h"
+#include <ESPmDNS.h>
+#include <NetworkUdp.h>
+#include <ArduinoOTA.h>
 
 // ============================================================================
 // CONFIGURAZIONE WI-FI MULTIPLI
@@ -334,6 +337,47 @@ void setup() {
     Serial.println("  !  Wi-Fi non disponibile, modalita' offline\n");
   }
 
+  // Password can be set with plain text (will be hashed internally)
+  // The authentication uses PBKDF2-HMAC-SHA256 with 10,000 iterations
+  ArduinoOTA.setPassword("!hJp^%RmYj7fQNmUjcd%");
+  ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH) {
+        type = "sketch";
+      } else {  // U_SPIFFS
+        type = "filesystem";
+      }
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      if (millis() - last_ota_time > 500) {
+        Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+        last_ota_time = millis();
+      }
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+        Serial.println("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+        Serial.println("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+        Serial.println("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+        Serial.println("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+        Serial.println("End Failed");
+      }
+    });
+
+  ArduinoOTA.begin();
+
   // FASE 2: Inizializzazione Data Manager
   Serial.println("FASE 2: INIZIALIZZAZIONE DATA MANAGER\n");
   ServerConfig serverConfig;
@@ -371,6 +415,8 @@ void setup() {
 // LOOP PRINCIPALE
 // ============================================================================
 void loop() {
+  ArduinoOTA.handle();
+  
   esp_task_wdt_reset();
   
   checkWiFiConnection();
