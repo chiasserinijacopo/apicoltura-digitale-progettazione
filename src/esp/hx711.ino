@@ -3,15 +3,14 @@
 // ============================================================================
 
 #include <Arduino.h>
-#include <esp_task_wdt.h>
-#include "HX711.h" //HX711 Arduino Library v0.7.5 di Bogdan Necula
+#include "HX711.h" //HX711 Arduino Library v0.7.5 di Bogdan Necula 
 #include "SensorValidation.h"
 
 // ============================================================================
 // CONFIGURAZIONE HARDWARE
 // ============================================================================
-#define HX711_DOUT_PIN 13
-#define HX711_SCK_PIN  12
+#define HX711_DOUT_PIN 15
+#define HX711_SCK_PIN  14
 
 // ============================================================================
 // OGGETTO HX711
@@ -23,7 +22,7 @@ static HX711 scale;
 // ============================================================================
 static float _hx711_sogliaMin = 5.0f;          // kg
 static float _hx711_sogliaMax = 80.0f;         // kg
-static unsigned long _hx711_intervallo = 10800000; // 3 ore
+static unsigned long _hx711_intervallo = 60000; // 3 ore
 static bool _hx711_abilitato = true;
 static bool _hx711_inizializzato = false;
 static bool _hx711_tarato = false;

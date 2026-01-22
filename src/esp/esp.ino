@@ -6,6 +6,10 @@
 #include <WiFiMulti.h>
 #include <esp_task_wdt.h>
 #include "SensorValidation.h"
+#include <ESPmDNS.h>
+#include <NetworkUdp.h>
+#include <ArduinoOTA.h>
+uint32_t last_ota_time = 0;
 
 // ============================================================================
 // CONFIGURAZIONE WI-FI MULTIPLI
@@ -18,8 +22,8 @@ const char* WIFI_NETWORKS[][2] = {
 const int NUM_NETWORKS = 3;
 
 // Configurazione server REST
-const char* REST_URL = "https://apicoltura-xxxx.restdb.io/rest";
-const char* REST_KEY = "your-api-key-here";
+const char* REST_URL = "https://dbarniadigitale-0abe.restdb.io/rest/";
+const char* REST_KEY = "1fe80bc79adb61240bff1f82429757190c888";
 const int REST_TIMEOUT = 10000;
 
 // Configurazione watchdog
@@ -39,14 +43,16 @@ extern void init_data_manager(ServerConfig* config);
 extern bool is_data_manager_ready();
 extern ConfigData fetch_sensor_config(const char* macAddress);
 extern bool save_sensor_data(SensorData* data);
-extern bool save_value(const char* macAddress, const char* tipoSensore,
-                       const char* idSensore, float valore, const char* unita,
-                       unsigned long timestamp, int codiceStato,
-                       bool alert, const char* alertTipo);
+extern bool save_value(const char* sensorId, float valore, unsigned long timestamp);
 extern bool send_notification(NotificationData* notification);
 extern bool notify(const char* macAddress, const char* tipoSensore,
                    float valoreRiferimento, unsigned long timestamp,
                    const char* messaggio, int livello);
+
+// ============================================================================
+// CONFIGURAZIONE SENSORI (memorizzata per accesso ai sensorId)
+// ============================================================================
+static ConfigData configSensori;
 
 // ============================================================================
 // DICHIARAZIONE FUNZIONI DEI SENSORI
@@ -234,24 +240,24 @@ void checkWiFiConnection() {
 void caricaConfigDaServer() {
   Serial.println("\n--- CARICAMENTO CONFIGURAZIONE ---\n");
 
-  if (! isWiFiConnected()) {
-    Serial.println("  !  Wi-Fi non connesso, uso config default");
+  if (!isWiFiConnected()) {
+    Serial.println("  ! Wi-Fi non connesso, uso config default");
   }
 
-  ConfigData config = fetch_sensor_config(deviceMacAddress);
+  configSensori = fetch_sensor_config(deviceMacAddress);
 
-  if (config.success) {
+  if (configSensori.success) {
     Serial.println("  + Config ricevuta dal server");
   } else {
-    Serial.println("  !  Config non disponibile, uso valori default");
+    Serial.println("  ! Config non disponibile, uso valori default");
   }
 
-  init_ds18b20(&config. ds18b20);
-  init_humidity_sht21(&config.sht21_humidity);
-  init_temperature_sht21(&config.sht21_temperature);
-  init_hx711(&config.hx711);
+  init_ds18b20(&configSensori.ds18b20);
+  init_humidity_sht21(&configSensori.sht21_humidity);
+  init_temperature_sht21(&configSensori.sht21_temperature);
+  init_hx711(&configSensori.hx711);
 
-  calibrate_hx711(config. calibrationFactor, config.calibrationOffset);
+  calibrate_hx711(configSensori.calibrationFactor, configSensori.calibrationOffset);
 
   configCaricata = true;
   Serial.println("\n--- CONFIGURAZIONE APPLICATA ---\n");
@@ -260,40 +266,39 @@ void caricaConfigDaServer() {
 // ============================================================================
 // INVIO DATO SENSORE
 // ============================================================================
-void inviaDatoSensore(const char* tipoSensore, const char* idSensore,
-                      RisultatoValidazione* risultato, const char* unita) {
+// tipoSensore: "ds18b20", "sht21_humidity", "sht21_temperature", "hx711"
+// ============================================================================
+void inviaDatoSensore(const char* tipoSensore, RisultatoValidazione* risultato) {
 
-  if (! isWiFiConnected()) {
+  if (!isWiFiConnected()) {
     Serial.println("  ! Wi-Fi non connesso, dato non inviato");
     return;
   }
 
-  bool alert = false;
-  const char* alertTipo = "";
+  // Ottieni il sensorId dalla configurazione in base al tipo
+  const char* sensorId = "";
 
-  if (risultato->codiceErrore == ALERT_THRESHOLD_HIGH) {
-    alert = true;
-    alertTipo = "HIGH";
-  } else if (risultato->codiceErrore == ALERT_THRESHOLD_LOW) {
-    alert = true;
-    alertTipo = "LOW";
+  if (strcmp(tipoSensore, "ds18b20") == 0) {
+    sensorId = configSensori.ds18b20.sensorId;
+  } else if (strcmp(tipoSensore, "sht21_humidity") == 0) {
+    sensorId = configSensori.sht21_humidity.sensorId;
+  } else if (strcmp(tipoSensore, "sht21_temperature") == 0) {
+    sensorId = configSensori.sht21_temperature.sensorId;
+  } else if (strcmp(tipoSensore, "hx711") == 0) {
+    sensorId = configSensori.hx711.sensorId;
+  }
+
+  if (strlen(sensorId) == 0) {
+    Serial.print("  ! SensorId non configurato per: ");
+    Serial.println(tipoSensore);
+    return;
   }
 
   unsigned long timestamp = getUnixTimestamp();
 
-  bool salvato = save_value(
-    deviceMacAddress,
-    tipoSensore,
-    idSensore,
-    risultato->valorePulito,
-    unita,
-    timestamp,
-    risultato->codiceErrore,
-    alert,
-    alertTipo
-  );
+  bool salvato = save_value(sensorId, risultato->valorePulito, timestamp);
 
-  if (! salvato) {
+  if (!salvato) {
     Serial.println("  ! Errore salvataggio dato");
   }
 }
@@ -333,6 +338,47 @@ void setup() {
     Serial.println("  !  Wi-Fi non disponibile, modalita' offline\n");
   }
 
+  // Password can be set with plain text (will be hashed internally)
+  // The authentication uses PBKDF2-HMAC-SHA256 with 10,000 iterations
+  ArduinoOTA.setPassword("!hJp^%RmYj7fQNmUjcd%");
+  ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH) {
+        type = "sketch";
+      } else {  // U_SPIFFS
+        type = "filesystem";
+      }
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      if (millis() - last_ota_time > 500) {
+        Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+        last_ota_time = millis();
+      }
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+        Serial.println("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+        Serial.println("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+        Serial.println("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+        Serial.println("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+        Serial.println("End Failed");
+      }
+    });
+
+  ArduinoOTA.begin();
+
   // FASE 2: Inizializzazione Data Manager
   Serial.println("FASE 2: INIZIALIZZAZIONE DATA MANAGER\n");
   ServerConfig serverConfig;
@@ -370,6 +416,8 @@ void setup() {
 // LOOP PRINCIPALE
 // ============================================================================
 void loop() {
+  ArduinoOTA.handle();
+  
   esp_task_wdt_reset();
   
   checkWiFiConnection();
@@ -381,8 +429,8 @@ void loop() {
     gestisciRisultatoSensore(risultato);
 
     if (risultato.valido) {
-      Serial.print("  -> Valore:  "); Serial.print(risultato.valorePulito); Serial.println(" C");
-      inviaDatoSensore("temperatura_interna", "DS18B20_001", &risultato, "C");
+      Serial.print("  -> Valore: "); Serial.print(risultato.valorePulito); Serial.println(" C");
+      inviaDatoSensore("ds18b20", &risultato);
     }
     Serial.println("---\n");
   }
@@ -395,7 +443,7 @@ void loop() {
 
     if (risultato.valido) {
       Serial.print("  -> Valore: "); Serial.print(risultato.valorePulito); Serial.println(" %");
-      inviaDatoSensore("umidita", "SHT21_HUM_001", &risultato, "%");
+      inviaDatoSensore("sht21_humidity", &risultato);
     }
     Serial.println("---\n");
   }
@@ -408,7 +456,7 @@ void loop() {
 
     if (risultato.valido) {
       Serial.print("  -> Valore: "); Serial.print(risultato.valorePulito); Serial.println(" C");
-      inviaDatoSensore("temperatura_ambiente", "SHT21_TEMP_001", &risultato, "C");
+      inviaDatoSensore("sht21_temperature", &risultato);
     }
     Serial.println("---\n");
   }
@@ -421,7 +469,7 @@ void loop() {
 
     if (risultato.valido) {
       Serial.print("  -> Valore: "); Serial.print(risultato.valorePulito); Serial.println(" kg");
-      inviaDatoSensore("peso", "HX711_001", &risultato, "kg");
+      inviaDatoSensore("hx711", &risultato);
     }
     Serial.println("---\n");
   }
